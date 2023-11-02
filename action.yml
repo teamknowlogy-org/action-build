@@ -32,6 +32,7 @@ runs:
       run: |
         npm i
       shell: bash
+
     - name: Build and package application
       run: |
         npm run build:${{env.APP_BRANCH_NAME}}
@@ -46,7 +47,6 @@ runs:
         ls -lrt
       shell: bash
       if: ${{env.APPLICATION_TYPE}} == 'angular'
-
 
     - name: Invalidate CloudFront cache
       run: |
