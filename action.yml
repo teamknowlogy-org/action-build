@@ -39,20 +39,20 @@ runs:
       shell: bash
       if: ${{env.APPLICATION_TYPE}} == 'angular'
 
-    - name: Deploy to S3
-      run: |
-        cd output/dist
-        aws s3 sync . s3://$( aws ssm get-parameter --region us-east-1 --name /${{env.PROJECT_NAME}}/${{env.APP_BRANCH_NAME}}/servicio/${{env.APPLICATION_NAME}}/S3_BUCKET_NAME  --query "Parameter.Value" --output text
- ) --delete
-        ls -lrt
-      shell: bash
-      if: ${{env.APPLICATION_TYPE}} == 'angular'
+#    - name: Deploy to S3
+ #     run: |
+#        cd output/dist
+ #       aws s3 sync . s3://$( aws ssm get-parameter --region us-east-1 --name /${{env.PROJECT_NAME}}/${{env.APP_BRANCH_NAME}}/servicio/${{env.APPLICATION_NAME}}/S3_BUCKET_NAME  --query "Parameter.Value" --output text
+# ) --delete
+#        ls -lrt
+#      shell: bash
+#      if: ${{env.APPLICATION_TYPE}} == 'angular'
 
-    - name: Invalidate CloudFront cache
-      run: |
-        aws cloudfront create-invalidation --distribution-id $( aws ssm get-parameter --region us-east-1 --name /${{env.PROJECT_NAME}}/${{env.APP_BRANCH_NAME}}/servicio/${{env.APPLICATION_NAME}}/CLOUDFRONT_ID  --query "Parameter.Value" --output text
- ) --paths "/*"
-      shell: bash
-      if: ${{env.APPLICATION_TYPE}} == 'angular'
+#    - name: Invalidate CloudFront cache
+ #     run: |
+#        aws cloudfront create-invalidation --distribution-id $( aws ssm get-parameter --region us-east-1 --name /${{env.PROJECT_NAME}}/${{env.APP_BRANCH_NAME}}/servicio/${{env.APPLICATION_NAME}}/CLOUDFRONT_ID  --query "Parameter.Value" --output text
+# ) --paths "/*"
+#      shell: bash
+#      if: ${{env.APPLICATION_TYPE}} == 'angular'
 
 
