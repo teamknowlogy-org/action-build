@@ -20,11 +20,12 @@ inputs:
 runs:
   using: "composite"
   steps:
-  
+
     - name: Use Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '14.x'
+      if: ${{env.APPLICATION_TYPE}} == 'angular'
 
     - name: Install application
       run: |
@@ -32,7 +33,7 @@ runs:
       shell: bash
     - name: Build and package application
       run: |
-        npm run build:"${{env.APP_BRANCH_NAME}}""
+        npm run build:${{env.APP_BRANCH_NAME}}
       shell: bash
 
     - name: Deploy to S3
