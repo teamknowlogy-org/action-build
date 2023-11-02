@@ -1,0 +1,46 @@
+name: 'BuildApp'
+description: 'Get all the paraters by Name of the repository'
+inputs:
+  PROJECT_NAME: 
+    description: 'Name of the Project  to build the app '
+    required: true
+    default: 'squint'
+  APP_BRANCH_NAME: 
+    description: 'Name of the Environment to build the app'
+    required: true
+    default: 'develop'    
+  APPLICATION_NAME: 
+    description: 'Name of the Application/Repository  to build the app '
+    required: true
+    default: 'squint-dashboard-tv' 
+  APPLICATION_TYPE: 
+    description: 'Type of the Application/Repository  to build the app '
+    required: true
+    default: 'angular' 
+runs:
+  using: "composite"
+  steps:
+  
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '14.x'
+
+    - name: Install application
+      run: |
+        npm i
+    - name: Build and package application
+      run: |
+        npm run build:"${{env.APP_BRANCH_NAME}}""
+
+    - name: Deploy to S3
+      run: |
+        cd output/dist
+        ls -lrt
+       # aws s3 sync . s3://sq-front-dev-website20230616061349916700000001 --delete
+
+   # - name: Invalidate CloudFront cache
+   #   run: |
+       # aws cloudfront create-invalidation --distribution-id E3ALMDX6DKZZEZ --paths "/*"
+
+
