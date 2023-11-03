@@ -21,6 +21,9 @@ inputs:
     description: 'Version of Node to build app'
     required: true
     default: '14.x'
+  LAMBDA_FUNCTION_NAME: 
+    description: 'Name of Lambda function'
+    required: true
   
 runs:
   using: "composite"
@@ -56,5 +59,31 @@ runs:
         aws cloudfront create-invalidation --distribution-id $( aws ssm get-parameter --region us-east-1 --name /${{env.PROJECT_NAME}}/${{env.APP_BRANCH_NAME}}/service/${{env.APPLICATION_NAME}}/CLOUDFRONT_ID  --query "Parameter.Value" --output text) --paths "/*"
       shell: bash
       if: ${{env.APPLICATION_TYPE}} == 'angular'
+
+###### Lambda steps  ######
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{env.NODE_VERSION}}
+      if: ${{env.APPLICATION_TYPE}} == 'lambda'
+
+    - name: Build and package application
+      run: |
+        npm run build
+      shell: bash
+      if: ${{env.APPLICATION_TYPE}} == 'lambda'
+
+    - name: Empaquetar función
+      run: zip -r lambda_function.zip ./* -x "*.zip"
+      shell: bash
+      if: ${{env.APPLICATION_TYPE}} == 'lambda'
+
+    - name: Desplegar función en AWS Lambda
+      run: |
+        aws lambda update-function-code \
+          --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+          --zip-file fileb://lambda_function.zip
+      shell: bash
+      if: ${{env.APPLICATION_TYPE}} == 'lambda'
 
 
