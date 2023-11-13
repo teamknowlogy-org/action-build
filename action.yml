@@ -59,10 +59,10 @@ runs:
       shell: bash
 
     - name: Build and package application
+      if: ${{inputs.APPLICATION_TYPE}} == 'front'
       run: |
         npm run build:${{inputs.APP_BRANCH_NAME}}
       shell: bash
-      if: ${{inputs.APPLICATION_TYPE}} == 'front'
 
 ###### Front steps  ######
 
