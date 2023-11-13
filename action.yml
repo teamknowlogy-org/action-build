@@ -3,27 +3,33 @@ description: 'Get all the paraters by Name of the repository'
 inputs:
   PROJECT_NAME: 
     description: 'Name of the Project  to build the app '
-    required: true
+    required: false
     default: 'squint'
   APP_BRANCH_NAME: 
     description: 'Name of the Environment to build the app'
-    required: true
+    required: false
     default: 'develop'    
   APPLICATION_NAME: 
-    description: 'Name of the Application/Repository  to build the app '
-    required: true
+    description: 'Name of the Application/Repository  to build the app'
+    required: false
     default: 'squint-front' 
   APPLICATION_TYPE: 
-    description: 'Type of the Application/Repository  to build the app '
-    required: true
-    default: 'angular'
+    description: 'Type of the Application/Repository  to build the app'
+    required: false
+    default: 'front'
   NODE_VERSION: 
     description: 'Version of Node to build app'
-    required: true
+    required: false
     default: '14.x'
   LAMBDA_FUNCTION_NAME: 
     description: 'Name of Lambda function'
-    required: true
+    required: false
+  AWS_ACCOUNT_ID:
+    description: 'ID Number of AWS account'
+    required: false
+  ECS_SERVICE_NAME:
+    description: 'Name of ECS service'
+    required: false
   
 runs:
   using: "composite"
@@ -32,8 +38,20 @@ runs:
     - name: Use Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: ${{env.NODE_VERSION}}
-      if: ${{env.APPLICATION_TYPE}} == 'angular'
+        node-version: ${{inputs.NODE_VERSION}}
+      if: ${{inputs.APPLICATION_TYPE}} == 'front'
+
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{inputs.NODE_VERSION}}
+      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{inputs.NODE_VERSION}}
+      if: ${{inputs.APPLICATION_TYPE}} == 'lambda'
 
     - name: Install application
       run: |
@@ -42,48 +60,76 @@ runs:
 
     - name: Build and package application
       run: |
-        npm run build:${{env.APP_BRANCH_NAME}}
+        npm run build:${{inputs.APP_BRANCH_NAME}}
       shell: bash
-      if: ${{env.APPLICATION_TYPE}} == 'angular'
+      if: ${{inputs.APPLICATION_TYPE}} == 'front'
+
+###### Front steps  ######
 
     - name: Deploy to S3
       run: |
         cd output/dist
-        aws s3 sync . s3://$( aws ssm get-parameter --region us-east-1 --name /${{env.PROJECT_NAME}}/${{env.APP_BRANCH_NAME}}/service/${{env.APPLICATION_NAME}}/S3_BUCKET_NAME  --query "Parameter.Value" --output text) --delete
+        aws s3 sync . s3://$( aws ssm get-parameter --region us-east-1 --name /${{inputs.PROJECT_NAME}}/${{inputs.APP_BRANCH_NAME}}/service/${{inputs.APPLICATION_NAME}}/S3_BUCKET_NAME  --query "Parameter.Value" --output text) --delete
         ls -lrt
       shell: bash
-      if: ${{env.APPLICATION_TYPE}} == 'angular'
+      if: ${{inputs.APPLICATION_TYPE}} == 'front'
 
     - name: Invalidate CloudFront cache
       run: |
-        aws cloudfront create-invalidation --distribution-id $( aws ssm get-parameter --region us-east-1 --name /${{env.PROJECT_NAME}}/${{env.APP_BRANCH_NAME}}/service/${{env.APPLICATION_NAME}}/CLOUDFRONT_ID  --query "Parameter.Value" --output text) --paths "/*"
+        aws cloudfront create-invalidation --distribution-id $( aws ssm get-parameter --region us-east-1 --name /${{inputs.PROJECT_NAME}}/${{inputs.APP_BRANCH_NAME}}/service/${{inputs.APPLICATION_NAME}}/CLOUDFRONT_ID  --query "Parameter.Value" --output text) --paths "/*"
       shell: bash
-      if: ${{env.APPLICATION_TYPE}} == 'angular'
+      if: ${{inputs.APPLICATION_TYPE}} == 'front'
 
 ###### Lambda steps  ######
-    - name: Use Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{env.NODE_VERSION}}
-      if: ${{env.APPLICATION_TYPE}} == 'lambda'
 
     - name: Build and package application
       run: |
         npm run build
       shell: bash
-      if: ${{env.APPLICATION_TYPE}} == 'lambda'
+      if: ${{inputs.APPLICATION_TYPE}} == 'lambda'
 
     - name: Empaquetar función
       run: zip -r lambda_function.zip ./* -x "*.zip"
       shell: bash
-      if: ${{env.APPLICATION_TYPE}} == 'lambda'
+      if: ${{inputs.APPLICATION_TYPE}} == 'lambda'
 
     - name: Desplegar función en AWS Lambda
       run: |
         aws lambda update-function-code \
-          --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+          --function-name ${{inputs.LAMBDA_FUNCTION_NAME}} \
           --zip-file fileb://lambda_function.zip
       shell: bash
-      if: ${{env.APPLICATION_TYPE}} == 'lambda'
+      if: ${{inputs.APPLICATION_TYPE}} == 'lambda'
 
+###### ECS steps  ######
 
+    - name: Build and package application
+      run: |
+        npm run build
+      shell: bash
+      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
+
+    - name: Login en el registro de contenedores de AWS
+      run: |
+        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{inputs.AWS_ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com
+      shell: bash
+      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
+      
+    - name: Construir y etiquetar imagen Docker
+      run: |
+        docker build -t ${{inputs.ECS_SERVICE_NAME}} .
+        docker tag ${{inputs.ECS_SERVICE_NAME}}:latest ${{inputs.AWS_ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/${{inputs.ECS_SERVICE_NAME}}:latest
+      shell: bash
+      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
+      
+    - name: Publicar imagen Docker en AWS ECR
+      run: |
+        docker push ${{inputs.AWS_ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/${{inputs.ECS_SERVICE_NAME}}:latest
+      shell: bash
+      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
+    
+    - name: Actualizar servicio en AWS ECS
+      run: |
+        aws ecs update-service --cluster ${{inputs.ECS_SERVICE_NAME}}-cluster --service ${{inputs.ECS_SERVICE_NAME}}-ecs-service --force-new-deployment
+      shell: bash
+      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
