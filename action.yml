@@ -36,22 +36,22 @@ runs:
   steps:
 
     - name: Use Node.js
+      if: ${{inputs.APPLICATION_TYPE}} == 'front'
       uses: actions/setup-node@v3
       with:
         node-version: ${{inputs.NODE_VERSION}}
-      if: ${{inputs.APPLICATION_TYPE}} == 'front'
 
     - name: Use Node.js
+      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
       uses: actions/setup-node@v3
       with:
         node-version: ${{inputs.NODE_VERSION}}
-      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
     
     - name: Use Node.js
+      if: ${{inputs.APPLICATION_TYPE}} == 'lambda'
       uses: actions/setup-node@v3
       with:
         node-version: ${{inputs.NODE_VERSION}}
-      if: ${{inputs.APPLICATION_TYPE}} == 'lambda'
 
     - name: Install application
       run: |
@@ -83,53 +83,54 @@ runs:
 ###### Lambda steps  ######
 
     - name: Build and package application
+      if: ${{inputs.APPLICATION_TYPE}} == 'lambda'
       run: |
         npm run build
       shell: bash
-      if: ${{inputs.APPLICATION_TYPE}} == 'lambda'
+      
 
     - name: Empaquetar función
+      if: ${{inputs.APPLICATION_TYPE}} == 'lambda'
       run: zip -r lambda_function.zip ./* -x "*.zip"
       shell: bash
-      if: ${{inputs.APPLICATION_TYPE}} == 'lambda'
 
     - name: Desplegar función en AWS Lambda
+      if: ${{inputs.APPLICATION_TYPE}} == 'lambda'
       run: |
         aws lambda update-function-code \
           --function-name ${{inputs.LAMBDA_FUNCTION_NAME}} \
           --zip-file fileb://lambda_function.zip
       shell: bash
-      if: ${{inputs.APPLICATION_TYPE}} == 'lambda'
 
 ###### ECS steps  ######
 
     - name: Build and package application
+      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
       run: |
         npm run build
       shell: bash
-      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
 
     - name: Login en el registro de contenedores de AWS
+      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
       run: |
         aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{inputs.AWS_ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com
       shell: bash
-      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
       
     - name: Construir y etiquetar imagen Docker
+      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
       run: |
         docker build -t ${{inputs.ECS_SERVICE_NAME}} .
         docker tag ${{inputs.ECS_SERVICE_NAME}}:latest ${{inputs.AWS_ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/${{inputs.ECS_SERVICE_NAME}}:latest
       shell: bash
-      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
       
     - name: Publicar imagen Docker en AWS ECR
+      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
       run: |
         docker push ${{inputs.AWS_ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/${{inputs.ECS_SERVICE_NAME}}:latest
       shell: bash
-      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
     
     - name: Actualizar servicio en AWS ECS
+      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
       run: |
         aws ecs update-service --cluster ${{inputs.ECS_SERVICE_NAME}}-cluster --service ${{inputs.ECS_SERVICE_NAME}}-ecs-service --force-new-deployment
       shell: bash
-      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
