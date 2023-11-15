@@ -87,7 +87,6 @@ runs:
       run: |
         npm run build
       shell: bash
-      
 
     - name: Empaquetar función
       if: ${{inputs.APPLICATION_TYPE}} == 'lambda'
@@ -105,32 +104,32 @@ runs:
 ###### ECS steps  ######
 
     - name: Build and package application
-      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
+      if: inputs.APPLICATION_TYPE == "ecs"
       run: |
         npm run build
       shell: bash
 
     - name: Login en el registro de contenedores de AWS
-      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
+      if: inputs.APPLICATION_TYPE == "ecs"
       run: |
         aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{inputs.AWS_ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com
       shell: bash
       
     - name: Construir y etiquetar imagen Docker
-      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
+      if: inputs.APPLICATION_TYPE == "ecs"
       run: |
         docker build -t ${{inputs.ECS_SERVICE_NAME}} .
         docker tag ${{inputs.ECS_SERVICE_NAME}}:latest ${{inputs.AWS_ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/${{inputs.ECS_SERVICE_NAME}}:latest
       shell: bash
       
     - name: Publicar imagen Docker en AWS ECR
-      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
+      if: inputs.APPLICATION_TYPE == "ecs"
       run: |
         docker push ${{inputs.AWS_ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/${{inputs.ECS_SERVICE_NAME}}:latest
       shell: bash
     
     - name: Actualizar servicio en AWS ECS
-      if: ${{inputs.APPLICATION_TYPE}} == 'ecs'
+      if: inputs.APPLICATION_TYPE == "ecs"
       run: |
         aws ecs update-service --cluster ${{inputs.ECS_SERVICE_NAME}}-cluster --service ${{inputs.ECS_SERVICE_NAME}}-ecs-service --force-new-deployment
       shell: bash
