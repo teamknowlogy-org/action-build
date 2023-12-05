@@ -58,14 +58,16 @@ runs:
     - name: Instalar dependencias
       if: inputs.APPLICATION_TYPE == 'NODE'
       run: npm install
-    
+      shell: bash
     - name: build 
       if: inputs.APPLICATION_TYPE == 'NODE'   
       run: npm run build:ssm
+      shell: bash
 
     - name: Empaquetar función
       if: inputs.DEPLOY_TYPE == 'LAMBDA'   
       run: zip -r lambda_function.zip ./* -x "*.zip"
+      shell: bash
 
     - name: Desplegar función en AWS Lambda
       if: inputs.DEPLOY_TYPE == 'LAMBDA'   
@@ -73,6 +75,7 @@ runs:
         aws lambda update-function-code \
           --function-name ${{ inputs.LAMBDA_FUNCTION_NAME }} \
           --zip-file fileb://lambda_function.zip
+      shell: bash
 
 
 
