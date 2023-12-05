@@ -32,12 +32,9 @@ inputs:
   NODE_VERSION: 
     description: 'Version of Node to build app'
     required: false
-  LAMBDA_FUNCTION_NAME: 
-    description: 'Name of Lambda function'
+  SERVICE_NAME: 
+    description: 'Name of the AWS SERVICE to refresh'
     required: false   
-  ECS_SERVICE_NAME:
-    description: 'Name of ECS service'
-    required: false
 runs:
   using: "composite"
   steps:
@@ -79,7 +76,7 @@ runs:
       if: inputs.DEPLOY_TYPE == 'LAMBDA'   
       run: |
         aws lambda update-function-code \
-          --function-name ${{ inputs.LAMBDA_FUNCTION_NAME }} \
+          --function-name ${{ inputs.SERVICE_NAME }} \
           --zip-file fileb://lambda_function.zip
       shell: bash
 
