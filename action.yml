@@ -5,7 +5,7 @@ inputs:
     description: 'Name of the Project  to build the app '
     required: false
     default: 'squint'
-  APP_BRANCH_NAME: 
+  APPLICATION_BRANCH_NAME: 
     description: 'Name of the Environment to build the app'
     required: false
     default: 'develop'    
@@ -17,16 +17,17 @@ inputs:
     description: 'Type of the Application/Repository  to build the app'
     required: false
     default: 'front'
+  DEPLOY_TYPE: 
+    description: 'Type of the Application/Repository  to build the deploy (LAMBDA/ECS/S3)'
+    required: false
+    default: 'front'    
   NODE_VERSION: 
     description: 'Version of Node to build app'
     required: false
     default: '14.x'
   LAMBDA_FUNCTION_NAME: 
     description: 'Name of Lambda function'
-    required: false
-  AWS_ACCOUNT_ID:
-    description: 'ID Number of AWS account'
-    required: false
+    required: false   
   ECS_SERVICE_NAME:
     description: 'Name of ECS service'
     required: false
@@ -35,49 +36,46 @@ runs:
   using: "composite"
   steps:
 
-    - name: Use Secret
-      run: echo "The secret is $${{ inputs.NODE_VERSION }}"
-      shell: bash
-           
-    - name: Use Secret
-      if: inputs.APPLICATION_TYPE == 'front'
-      run: echo "The FRONT IS APPLICATION_TYPE and variable name is $${{ inputs.APPLICATION_TYPE }}"
-      shell: bash
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID_DEV }}
+        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY_DEV }}
+        aws-region: ${{ env.AWS_REGION }}
+        
+    - name: Checkout the repository to the runner
+      uses: teamknowlogy-org/action-get-credentials@main
+      with:
+        PROJECT_NAME: ${{ inputs.PROJECT_NAME }}
+        APPLICATION_NAME: ${{ inputs.APPLICATION_NAME }}
       
-    - name: Use Secret
-      if: inputs.APPLICATION_TYPE == 'back'
-      run: echo "The FRONT IS APPLICATION_TYPE and variable name is $${{ inputs.APPLICATION_TYPE }}"
-      shell: bash
-
     - name: Use Node.js
-      if: inputs.APPLICATION_TYPE == 'front'
+      if: inputs.APPLICATION_TYPE == 'NODE'
       uses: actions/setup-node@v3
       with:
         node-version: ${{ inputs.NODE_VERSION }}
 
-    - name: Use Node.js
-      if: inputs.APPLICATION_TYPE == 'back'
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ inputs.NODE_VERSION }}
+    - name: Instalar dependencias
+      if: inputs.APPLICATION_TYPE == 'NODE'
+      run: npm install
+    
+    - name: build 
+      if: inputs.APPLICATION_TYPE == 'NODE'   
+      run: npm run build:ssm
 
-#   - name: Use Node.js
-#     if: inputs.APPLICATION_TYPE == 'ecs'
-#     uses: actions/setup-node@v3
-#     with:
-#       node-version: ${{inputs.NODE_VERSION}}
-#   
-#   - name: Use Node.js
-#     if: inputs.APPLICATION_TYPE == 'lambda'
-#     uses: actions/setup-node@v3
-#     with:
-#       node-version: ${{inputs.NODE_VERSION}}
-#
-#   - name: Install application
-#     run: |
-#       npm i
-#     shell: bash
-#
+    - name: Empaquetar función
+      if: inputs.DEPLOY_TYPE == 'LAMBDA'   
+      run: zip -r lambda_function.zip ./* -x "*.zip"
+
+    - name: Desplegar función en AWS Lambda
+      if: inputs.DEPLOY_TYPE == 'LAMBDA'   
+      run: |
+        aws lambda update-function-code \
+          --function-name ${{ inputs.LAMBDA_FUNCTION_NAME }} \
+          --zip-file fileb://lambda_function.zip
+
+
+
 ###### Front steps  ######
 #
 #    - name: Build and package application
@@ -98,27 +96,6 @@ runs:
 #      if: inputs.APPLICATION_TYPE == 'front'
 #      run: |
 #        aws cloudfront create-invalidation --distribution-id $( aws ssm get-parameter --region us-east-1 --name /${{inputs.PROJECT_NAME}}/${{inputs.APP_BRANCH_NAME}}/service/${{inputs.APPLICATION_NAME}}/CLOUDFRONT_ID  --query "Parameter.Value" --output text) --paths "/*"
-#      shell: bash
-#
-####### Lambda steps  ######
-#
-#    - name: Build and package application
-#      if: inputs.APPLICATION_TYPE == 'lambda'
-#      run: |
-#        npm run build
-#      shell: bash
-#
-#    - name: Empaquetar función
-#      if: inputs.APPLICATION_TYPE == 'lambda'
-#      run: zip -r lambda_function.zip ./* -x "*.zip"
-#      shell: bash
-#
-#    - name: Desplegar función en AWS Lambda
-#      if: inputs.APPLICATION_TYPE == 'lambda'
-#      run: |
-#        aws lambda update-function-code \
-#          --function-name ${{inputs.LAMBDA_FUNCTION_NAME}} \
-#          --zip-file fileb://lambda_function.zip
 #      shell: bash
 #
 ####### ECS steps  ######
