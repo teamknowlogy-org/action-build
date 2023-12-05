@@ -38,11 +38,7 @@ runs:
     - name: Use Secret
       run: echo "The secret is $${{ inputs.NODE_VERSION }}"
       shell: bash
-      
-    - name: Use Secret
-      run: echo "The secret is $${{ secrets.AWS_REGION }}"
-      shell: bash
-      
+           
     - name: Use Secret
       if: inputs.APPLICATION_TYPE == 'front'
       run: echo "The FRONT IS APPLICATION_TYPE and variable name is $${{ inputs.APPLICATION_TYPE }}"
