@@ -79,28 +79,33 @@ runs:
       shell: bash
 
 
-
 ###### Front steps  ######
+
+    - name: Build and package application
+      if: env.APPLICATION_TYPE == 'CLOUDFRONT'
+      run: |
+        npm install
+      shell: bash
+      
+    - name: Build and package application
+      if: env.APPLICATION_TYPE == 'CLOUDFRONT'
+      run: |
+        npm run build:develop
+      shell: bash
 #
-#    - name: Build and package application
-#      if: inputs.APPLICATION_TYPE == 'front'
-#      run: |
-#        npm run build:${{inputs.APP_BRANCH_NAME}}
-#      shell: bash
-#
-#    - name: Deploy to S3
-#      if: inputs.APPLICATION_TYPE == 'front'
-#      run: |
-#        cd output/dist
-#        aws s3 sync . s3://$( aws ssm get-parameter --region us-east-1 --name /${{inputs.PROJECT_NAME}}/${{inputs.APP_BRANCH_NAME}}/service/${{inputs.APPLICATION_NAME}}/S3_BUCKET_NAME  --query "Parameter.Value" --output text) --delete
-#        ls -lrt
-#      shell: bash
-#
-#    - name: Invalidate CloudFront cache
-#      if: inputs.APPLICATION_TYPE == 'front'
-#      run: |
-#        aws cloudfront create-invalidation --distribution-id $( aws ssm get-parameter --region us-east-1 --name /${{inputs.PROJECT_NAME}}/${{inputs.APP_BRANCH_NAME}}/service/${{inputs.APPLICATION_NAME}}/CLOUDFRONT_ID  --query "Parameter.Value" --output text) --paths "/*"
-#      shell: bash
+    - name: Deploy to S3
+      if: env.APPLICATION_TYPE == 'CLOUDFRONT'
+      run: |
+        cd output/dist
+        aws s3 sync . s3://${{ env.BUCKET_NAME }} --delete
+        ls -lrt
+      shell: bash
+
+    - name: Invalidate CloudFront cache
+      if: env.APPLICATION_TYPE == 'CLOUDFRONT'
+      run: |
+        aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION }} --paths "/*"
+      shell: bash
 #
 ####### ECS steps  ######
 
