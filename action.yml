@@ -27,7 +27,7 @@ inputs:
     required: false
     options:
       - LAMBDA
-      - S3
+      - CLOUDFRONT
       - ECS  
   NODE_VERSION: 
     description: 'Version of Node to build app'
@@ -80,21 +80,26 @@ runs:
 
 
 ###### Front steps  ######
-
+    - name: Use Node.js
+      if: env.DEPLOY_TYPE == 'CLOUDFRONT'
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ inputs.NODE_VERSION }}
+        
     - name: Build and package application
-      if: env.APPLICATION_TYPE == 'CLOUDFRONT'
+      if: env.DEPLOY_TYPE == 'CLOUDFRONT'
       run: |
         npm install
       shell: bash
       
     - name: Build and package application
-      if: env.APPLICATION_TYPE == 'CLOUDFRONT'
+      if: env.DEPLOY_TYPE == 'CLOUDFRONT'
       run: |
         npm run build:develop
       shell: bash
 #
     - name: Deploy to S3
-      if: env.APPLICATION_TYPE == 'CLOUDFRONT'
+      if: env.DEPLOY_TYPE == 'CLOUDFRONT'
       run: |
         cd output/dist
         aws s3 sync . s3://${{ env.BUCKET_NAME }} --delete
