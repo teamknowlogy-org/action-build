@@ -84,7 +84,7 @@ runs:
       if: env.DEPLOY_TYPE == 'CLOUDFRONT'
       uses: actions/setup-node@v3
       with:
-        node-version: ${{ inputs.NODE_VERSION }}
+        node-version: ${{ env.NODE_VERSION }}
         
     - name: Build and package application
       if: env.DEPLOY_TYPE == 'CLOUDFRONT'
