@@ -118,7 +118,7 @@ runs:
       run: |
         if [[ -z "$CLUSTER_NAME" ]]; then
           echo "Name Cluster Name  is empty"
-          echo CLUSTER_NAME=$SERVICE_NAME
+          echo CLUSTER_NAME=$(echo $SERVICE_NAME) >> "$GITHUB_ENV"   
         else
           echo "Name variable is not empty"
           echo "USING $CLUSTER_NAME"
