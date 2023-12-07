@@ -136,6 +136,7 @@ runs:
     - name: Set env to staging
       run: |
          echo CLUSTER_NAME=$(echo $GITHUB_REPOSITORY | cut -d "/" -f2) >> "$GITHUB_ENV"
+      shell: bash
     
     - name: Set CLuster Env
       run: |
