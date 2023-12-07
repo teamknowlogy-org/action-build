@@ -32,9 +32,6 @@ inputs:
   NODE_VERSION: 
     description: 'Version of Node to build app'
     required: false
-  SERVICE_NAME: 
-    description: 'Name of the AWS SERVICE to refresh'
-    required: false   
 runs:
   using: "composite"
   steps:
@@ -116,18 +113,18 @@ runs:
     - name: Construir y etiquetar imagen Docker
       if: inputs.APPLICATION_TYPE == 'ECS'
       run: |
-        docker build -t ${{ inputs.SERVICE_NAME }} .
-        docker tag ${{inputs.SERVICE_NAME}}:latest ${{ env.ECR_REPOSITORY }}/${{ inputs.SERVICE_NAME }}:latest
+        docker build -t ${{ env.SERVICE_NAME }} .
+        docker tag ${{ env.SERVICE_NAME }}:latest ${{ env.ECR_REPOSITORY }}/${{ env.SERVICE_NAME }}:latest
       shell: bash
       
 #    - name: Publicar imagen Docker en AWS ECR
 #      if: inputs.APPLICATION_TYPE == 'ecs'
 #      run: |
-#        docker push ${{ env.ECR_REPOSITORY }}/${{ inputs.SERVICE_NAME }}:latest
+#        docker push ${{ env.ECR_REPOSITORY }}/${{ env.SERVICE_NAME }}:latest
 #      shell: bash
     
 #    - name: Actualizar servicio en AWS ECS
 #      if: inputs.APPLICATION_TYPE == 'ecs'
 #      run: |
-#        aws ecs update-service --cluster ${{ inputs.SERVICE_NAME }}-cluster --service ${{ inputs.SERVICE_NAME }}-ecs-service --force-new-deployment
+#        aws ecs update-service --cluster ${{ env.SERVICE_NAME }}-cluster --service ${{ env.SERVICE_NAME }}-ecs-service --force-new-deployment
 #      shell: bash
