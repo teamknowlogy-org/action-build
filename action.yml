@@ -105,26 +105,26 @@ runs:
 ####### ECS steps  ######
 
     - name: Login en el registro de contenedores de AWS
-      if: inputs.APPLICATION_TYPE == 'ECS'
+      if: env.APPLICATION_TYPE == 'ECS'
       run: |
         aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REPOSITORY }}
       shell: bash
       
     - name: Construir y etiquetar imagen Docker
-      if: inputs.APPLICATION_TYPE == 'ECS'
+      if:  env.APPLICATION_TYPE == 'ECS'
       run: |
         docker build -t ${{ env.SERVICE_NAME }} .
         docker tag ${{ env.SERVICE_NAME }}:latest ${{ env.ECR_REPOSITORY }}/${{ env.SERVICE_NAME }}:latest
       shell: bash
       
 #    - name: Publicar imagen Docker en AWS ECR
-#      if: inputs.APPLICATION_TYPE == 'ecs'
+#      if:  env.APPLICATION_TYPE == 'ecs'
 #      run: |
 #        docker push ${{ env.ECR_REPOSITORY }}/${{ env.SERVICE_NAME }}:latest
 #      shell: bash
     
 #    - name: Actualizar servicio en AWS ECS
-#      if: inputs.APPLICATION_TYPE == 'ecs'
+#      if:  env.APPLICATION_TYPE == 'ecs'
 #      run: |
 #        aws ecs update-service --cluster ${{ env.SERVICE_NAME }}-cluster --service ${{ env.SERVICE_NAME }}-ecs-service --force-new-deployment
 #      shell: bash
