@@ -107,7 +107,7 @@ runs:
       shell: bash
 
     - name: Invalidate CloudFront cache
-      if: env.APPLICATION_TYPE == 'CLOUDFRONT'
+      if: env.DEPLOY_TYPE == 'CLOUDFRONT'
       run: |
         aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION }} --paths "/*"
       shell: bash
