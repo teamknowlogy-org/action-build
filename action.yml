@@ -62,6 +62,7 @@ runs:
       if: inputs.APPLICATION_TYPE == 'NODE'
       run: npm install
       shell: bash
+      
     - name: build 
       if: inputs.APPLICATION_TYPE == 'NODE'   
       run: npm run build:ssm
@@ -105,12 +106,6 @@ runs:
 #      shell: bash
 #
 ####### ECS steps  ######
-
-    - name: Build and package application
-      if: inputs.APPLICATION_TYPE == 'ECS'
-      run: |
-        npm run build
-      shell: bash
 
     - name: Login en el registro de contenedores de AWS
       if: inputs.APPLICATION_TYPE == 'ECS'
