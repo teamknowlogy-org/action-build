@@ -133,11 +133,7 @@ runs:
         docker push ${{ env.ECR_REPOSITORY }}/${{ env.SERVICE_NAME }}:latest
       shell: bash
 
-    - name: Set env to staging
-      run: |
-         echo CLUSTER_NAME=$(echo $GITHUB_REPOSITORY | cut -d "/" -f2) >> "$GITHUB_ENV"
-      shell: bash
-    
+   
     - name: Set CLuster Env
       run: |
         if [[ -z "$CLUSTER_NAME" ]]; then
@@ -147,6 +143,7 @@ runs:
           echo "Name variable is not empty"
           echo "USING $CLUSTER_NAME"
         fi
+      shell: bash
 
     - name: Actualizar servicio en AWS ECS
       if:  env.APPLICATION_TYPE == 'ECS'
