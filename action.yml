@@ -14,7 +14,7 @@ inputs:
   APPLICATION_NAME: 
     description: 'Name of the Application/Repository  to build the app'
     required: false
-    default: 'squint-front' 
+    default: 'NO_VALUE' 
   APPLICATION_TYPE: 
     description: 'Type of the Application/Repository  to build the app'
     required: true
