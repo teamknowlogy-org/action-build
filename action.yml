@@ -1,37 +1,5 @@
 name: 'BuildApp'
 description: 'Get all the paraters by Name of the repository'
-inputs:
-  PROJECT_NAME: 
-    description: 'Name of the Project  to build the app '
-    required: false
-    default: 'squint'
-    options:
-      - squint
-  APPLICATION_BRANCH_NAME: 
-    description: 'Name of the Environment to build the app'
-    required: false
-    default: 'develop'    
-  APPLICATION_NAME: 
-    description: 'Name of the Application/Repository  to build the app'
-    required: false
-    default: 'NO_VALUE' 
-  APPLICATION_TYPE: 
-    description: 'Type of the Application/Repository  to build the app'
-    required: true
-    options:
-      - NODE
-      - REACT
-      - PYTHON  
-  DEPLOY_TYPE: 
-    description: 'Type of the Application/Repository  to build the deploy (LAMBDA/ECS/S3)'
-    required: false
-    options:
-      - LAMBDA
-      - CLOUDFRONT
-      - ECS  
-  NODE_VERSION: 
-    description: 'Version of Node to build app'
-    required: false
 runs:
   using: "composite"
   steps:
@@ -50,28 +18,28 @@ runs:
         APPLICATION_NAME: ${{ env.APPLICATION_NAME }}
       
     - name: Use Node.js
-      if: inputs.APPLICATION_TYPE == 'NODE'
+      if: env.APPLICATION_TYPE == 'NODE'
       uses: actions/setup-node@v3
       with:
-        node-version: ${{ inputs.NODE_VERSION }}
+        node-version: ${{ env.NODE_VERSION }}
 
     - name: Instalar dependencias
-      if: inputs.APPLICATION_TYPE == 'NODE'
+      if: env.APPLICATION_TYPE == 'NODE'
       run: npm install
       shell: bash
       
     - name: build 
-      if: inputs.APPLICATION_TYPE == 'NODE'   
+      if: env.APPLICATION_TYPE == 'NODE'   
       run: npm run build:ssm
       shell: bash
 
     - name: Empaquetar función
-      if: inputs.DEPLOY_TYPE == 'LAMBDA'   
+      if: env.DEPLOY_TYPE == 'LAMBDA'   
       run: zip -r lambda_function.zip ./* -x "*.zip"
       shell: bash
 
     - name: Desplegar función en AWS Lambda
-      if: inputs.DEPLOY_TYPE == 'LAMBDA'   
+      if: env.DEPLOY_TYPE == 'LAMBDA'   
       run: |
         aws lambda update-function-code \
           --function-name ${{ env.APPLICATION_NAME }} \
