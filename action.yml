@@ -74,7 +74,7 @@ runs:
       if: inputs.DEPLOY_TYPE == 'LAMBDA'   
       run: |
         aws lambda update-function-code \
-          --function-name ${{ inputs.SERVICE_NAME }} \
+          --function-name ${{ env.APPLICATION_NAME }} \
           --zip-file fileb://lambda_function.zip
       shell: bash
 
