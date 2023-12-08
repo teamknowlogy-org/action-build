@@ -18,18 +18,19 @@ runs:
         APPLICATION_NAME: ${{ env.APPLICATION_NAME }}
       
     - name: Use Node.js
-      if: env.APPLICATION_TYPE == 'NODE'
       uses: actions/setup-node@v3
       with:
         node-version: ${{ env.NODE_VERSION }}
 
+###### LAMBDA DEPLOY  ######
+
     - name: Instalar dependencias
-      if: env.APPLICATION_TYPE == 'NODE'
+      if: env.DEPLOY_TYPE == 'LAMBDA'
       run: npm install
       shell: bash
       
     - name: build 
-      if: env.APPLICATION_TYPE == 'NODE'   
+      if: env.DEPLOY_TYPE == 'LAMBDA'   
       run: npm run build:ssm
       shell: bash
 
@@ -47,12 +48,7 @@ runs:
       shell: bash
 
 
-###### Front steps  ######
-    - name: Use Node.js
-      if: env.DEPLOY_TYPE == 'CLOUDFRONT'
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ env.NODE_VERSION }}
+###### CLOUDFRONT DEPLOY  ######
         
     - name: Build and package application
       if: env.DEPLOY_TYPE == 'CLOUDFRONT'
@@ -65,7 +61,7 @@ runs:
       run: |
         npm run build:develop
       shell: bash
-#
+
     - name: Deploy to S3
       if: env.DEPLOY_TYPE == 'CLOUDFRONT'
       run: |
@@ -79,10 +75,11 @@ runs:
       run: |
         aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION }} --paths "/*"
       shell: bash
-#
+
 ####### ECS steps  ######
+
     - name: Set CLuster Env
-      if: env.APPLICATION_TYPE == 'ECS'
+      if: env.DEPLOY_TYPE == 'ECS'
       run: |
         if [[ -z "$CLUSTER_NAME" ]]; then
           echo "Name Cluster Name  is empty"
@@ -92,47 +89,41 @@ runs:
           echo "USING $CLUSTER_NAME"
         fi
       shell: bash
-
-    - name: Use Node.js
-      if: env.DEPLOY_TYPE == 'ECS'
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ env.NODE_VERSION }}
         
     - name: Instalar dependencias
-      if: env.APPLICATION_TYPE == 'ECS'
+      if: env.DEPLOY_TYPE == 'ECS'
       run: |
         npm install
       shell: bash
 
     - name: Hacer build de la aplicación
-      if: env.APPLICATION_TYPE == 'ECS'
+      if: env.DEPLOY_TYPE == 'ECS'
       run: |
         npm run build
       shell: bash
           
     - name: Login en el registro de contenedores de AWS
-      if: env.APPLICATION_TYPE == 'ECS'
+      if: env.DEPLOY_TYPE == 'ECS'
       run: |
         aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REPOSITORY }}
       shell: bash
       
     - name: Construir y etiquetar imagen Docker
-      if:  env.APPLICATION_TYPE == 'ECS'
+      if:  env.DEPLOY_TYPE == 'ECS'
       run: |
         docker build -t ${{ env.CLUSTER_NAME }} .
         docker tag ${{ env.CLUSTER_NAME }}:latest ${{ env.ECR_REPOSITORY }}/${{ env.CLUSTER_NAME }}:latest
       shell: bash
       
     - name: Publicar imagen Docker en AWS ECR
-      if:  env.APPLICATION_TYPE == 'ECS'
+      if:  env.DEPLOY_TYPE == 'ECS'
       run: |
         docker push ${{ env.ECR_REPOSITORY }}/${{ env.CLUSTER_NAME }}:latest
       shell: bash
    
 
     - name: Actualizar servicio en AWS ECS
-      if:  env.APPLICATION_TYPE == 'ECS'
+      if:  env.DEPLOY_TYPE == 'ECS'
       run: |
         aws ecs update-service --cluster ${{ env.CLUSTER_NAME }}-cluster --service ${{ env.SERVICE_NAME }}-ecs-service --force-new-deployment
       shell: bash
