@@ -130,11 +130,13 @@ runs:
       if: env.APPLICATION_TYPE == 'ECS'
       run: |
         npm install
+      shell: bash
 
     - name: Hacer build de la aplicación
       if: env.APPLICATION_TYPE == 'ECS'
       run: |
         npm run build
+      shell: bash
           
     - name: Login en el registro de contenedores de AWS
       if: env.APPLICATION_TYPE == 'ECS'
