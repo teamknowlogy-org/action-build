@@ -125,7 +125,12 @@ runs:
         fi
       shell: bash
 
-
+    - name: Use Node.js
+      if: env.DEPLOY_TYPE == 'ECS'
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
     - name: Instalar dependencias
       if: env.APPLICATION_TYPE == 'ECS'
       run: |
