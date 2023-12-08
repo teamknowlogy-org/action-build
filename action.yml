@@ -26,12 +26,12 @@ runs:
 
     - name: Instalar dependencias
       if: env.DEPLOY_TYPE == 'LAMBDA'
-      run: npm install
+      run: npm install ${{ env.PROD_FLAG }}
       shell: bash
       
     - name: build 
       if: env.DEPLOY_TYPE == 'LAMBDA'   
-      run: npm run build:ssm
+      run: npm run build:ssm 
       shell: bash
 
     - name: Empaquetar función
