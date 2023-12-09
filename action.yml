@@ -26,7 +26,7 @@ runs:
     - name: Set CLuster Env
       if: env.DEPLOY_TYPE == 'LAMBDA'
       run: |
-          echo S3_BUCKET_NAME_LAMBDA=squint-dev-lambda-deploy" >> "$GITHUB_ENV"   
+          echo S3_BUCKET_NAME_LAMBDA="squint-dev-lambda-deploy" >> "$GITHUB_ENV"   
       shell: bash
 
       
