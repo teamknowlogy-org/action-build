@@ -93,7 +93,7 @@ runs:
       if: env.DEPLOY_TYPE == 'CLOUDFRONT'
       run: |
         cd output/dist
-        aws s3 sync . s3://${{ env.APPLICATION_NAME }} --delete
+        aws s3 sync . s3://${{ env.APPLICATION_NAME }}-dev --delete
         ls -lrt
       shell: bash
 
