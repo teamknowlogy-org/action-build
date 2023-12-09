@@ -68,7 +68,13 @@ runs:
     - name: Set CLuster Env
       if: env.DEPLOY_TYPE == 'CLOUDFRONT'
       run: |
-          echo CLOUDFRONT_DISTRIBUTION="$(aws cloudfront list-distributions --query 'DistributionList.Items[?Origins.Items[?Id==`'${{ env.APPLICATION_NAME }}-dev'`]].{Id:Id}' --output text)" >> "$GITHUB_ENV"   
+          echo BUCKET_NAME="${{ env.APPLICATION_NAME }}-dev --output text)" >> "$GITHUB_ENV"   
+      shell: bash
+      
+    - name: Set CLuster Env
+      if: env.DEPLOY_TYPE == 'CLOUDFRONT'
+      run: |
+          echo CLOUDFRONT_DISTRIBUTION="$(aws cloudfront list-distributions --query 'DistributionList.Items[?Origins.Items[?Id==`'${{ env.BUCKET_NAME }}'`]].{Id:Id}' --output text)" >> "$GITHUB_ENV"   
       shell: bash
     
     - name: Set CLOUDFRONT_DISTRIBUTION Env      
@@ -93,7 +99,7 @@ runs:
       if: env.DEPLOY_TYPE == 'CLOUDFRONT'
       run: |
         cd output/dist
-        aws s3 sync . s3://${{ env.APPLICATION_NAME }}-dev --delete
+        aws s3 sync . s3://${{ env.BUCKET_NAME }} --delete
         ls -lrt
       shell: bash
 
