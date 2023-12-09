@@ -68,7 +68,7 @@ runs:
     - name: Set CLuster Env
       if: env.DEPLOY_TYPE == 'CLOUDFRONT'
       run: |
-          echo CLOUDFRONT_DISTRIBUTION="$(aws cloudfront list-distributions --query 'DistributionList.Items[?Origins.Items[?Id==`'${{ env.APPLICATION_NAME }}'`]].{Id:Id}' --output text)" >> "$GITHUB_ENV"   
+          echo CLOUDFRONT_DISTRIBUTION="$(aws cloudfront list-distributions --query 'DistributionList.Items[?Origins.Items[?Id==`'${{ env.APPLICATION_NAME }}-dev'`]].{Id:Id}' --output text)" >> "$GITHUB_ENV"   
       shell: bash
     
     - name: Set CLOUDFRONT_DISTRIBUTION Env      
