@@ -28,7 +28,6 @@ runs:
       run: |
           echo S3_BUCKET_NAME_LAMBDA="squint-dev-lambda-deploy" >> "$GITHUB_ENV"   
       shell: bash
-
       
     - name: Instalar dependencias
       if: env.DEPLOY_TYPE == 'LAMBDA'
@@ -71,6 +70,8 @@ runs:
       run: |
           echo CLOUDFRONT_DISTRIBUTION="$(aws cloudfront list-distributions --query 'DistributionList.Items[?Origins.Items[?Id==`'${{ env.APPLICATION_NAME }}'`]].{Id:Id}' --output text)" >> "$GITHUB_ENV"   
       shell: bash
+    
+    - name: Set CLOUDFRONT_DISTRIBUTION Env      
       if: env.DEPLOY_TYPE == 'CLOUDFRONT'
       run: |
           echo "My Cloudfront distribution is: ${{ env.CLOUDFRONT_DISTRIBUTION }}"
