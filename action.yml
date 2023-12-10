@@ -68,7 +68,7 @@ runs:
     - name: Set CLuster Env
       if: env.DEPLOY_TYPE == 'CLOUDFRONT'
       run: |
-          echo BUCKET_NAME="${{ env.APPLICATION_NAME }}-dev --output text)" >> "$GITHUB_ENV"   
+          echo BUCKET_NAME="${{ env.APPLICATION_NAME }}-dev" >> "$GITHUB_ENV"   
       shell: bash
       
     - name: Set CLuster Env
