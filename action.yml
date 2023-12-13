@@ -46,7 +46,7 @@ runs:
       
     - name: Empaquetar función
       if: env.DEPLOY_TYPE == 'LAMBDA'   
-      run: aws s3 cp "lambda_function.zip" "s3://${{ env.S3_BUCKET_NAME_LAMBDA }}/lambda_function.zip"
+      run: aws s3 cp "lambda_function.zip" "s3://${{ env.S3_BUCKET_NAME_LAMBDA }}/${{ env.APPLICATION_NAME }}/lambda_function.zip"
       shell: bash
 
     - name: Desplegar función en AWS Lambda
@@ -61,7 +61,7 @@ runs:
 
     - name: Empaquetar función
       if: env.DEPLOY_TYPE == 'LAMBDA'   
-      run: aws s3 rm "s3://${{ env.S3_BUCKET_NAME_LAMBDA }}/lambda_function.zip"
+      run: aws s3 rm "s3://${{ env.S3_BUCKET_NAME_LAMBDA }}/${{ env.APPLICATION_NAME }}lambda_function.zip"
       shell: bash
 
 ###### CLOUDFRONT DEPLOY  ######
