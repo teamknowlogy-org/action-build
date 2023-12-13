@@ -145,18 +145,18 @@ runs:
       if:  env.DEPLOY_TYPE == 'ECS'
       run: |
         docker build -t ${{ env.CLUSTER_NAME }} .
-        docker tag ${{ env.CLUSTER_NAME }}:latest ${{ env.ECR_REPOSITORY }}/${{ env.CLUSTER_NAME }}:latest
+        docker tag ${{ env.CLUSTER_NAME }}:latest ${{ env.ECR_REPOSITORY }}/${{ env.APPLICATION_NAME }}:latest
       shell: bash
       
     - name: Publicar imagen Docker en AWS ECR
       if:  env.DEPLOY_TYPE == 'ECS'
       run: |
-        docker push ${{ env.ECR_REPOSITORY }}/${{ env.CLUSTER_NAME }}:latest
+        docker push ${{ env.ECR_REPOSITORY }}/${{ env.APPLICATION_NAME }}:latest
       shell: bash
    
 
     - name: Actualizar servicio en AWS ECS
       if:  env.DEPLOY_TYPE == 'ECS'
       run: |
-        aws ecs update-service --cluster ${{ env.CLUSTER_NAME }}-cluster --service ${{ env.SERVICE_NAME }}-ecs-service --force-new-deployment
+        aws ecs update-service --cluster squint-squint_ecs_cluster-cluster --service ${{ env.APPLICATION_NAME }}-ecs-service --force-new-deployment
       shell: bash
