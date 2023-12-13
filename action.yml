@@ -144,8 +144,8 @@ runs:
     - name: Construir y etiquetar imagen Docker
       if:  env.DEPLOY_TYPE == 'ECS'
       run: |
-        docker build -t ${{ env.CLUSTER_NAME }} .
-        docker tag ${{ env.CLUSTER_NAME }}:latest ${{ env.ECR_REPOSITORY }}/${{ env.APPLICATION_NAME }}:latest
+        docker build -t ${{ env.APPLICATION_NAME }} .
+        docker tag ${{ env.APPLICATION_NAME }}:latest ${{ env.ECR_REPOSITORY }}/${{ env.APPLICATION_NAME }}:latest
       shell: bash
       
     - name: Publicar imagen Docker en AWS ECR
@@ -154,7 +154,6 @@ runs:
         docker push ${{ env.ECR_REPOSITORY }}/${{ env.APPLICATION_NAME }}:latest
       shell: bash
    
-
     - name: Actualizar servicio en AWS ECS
       if:  env.DEPLOY_TYPE == 'ECS'
       run: |
