@@ -55,7 +55,7 @@ runs:
         aws lambda update-function-code \
           --function-name ${{ env.APPLICATION_NAME }} \
           --s3-bucket ${{ env.S3_BUCKET_NAME_LAMBDA }} \
-          --s3-key lambda_function.zip \
+          --s3-key ${{ env.APPLICATION_NAME }}/lambda_function.zip \
           --region ${{ env.AWS_REGION }}
       shell: bash
 
