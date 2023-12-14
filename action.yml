@@ -157,5 +157,5 @@ runs:
     - name: Actualizar servicio en AWS ECS
       if:  env.DEPLOY_TYPE == 'ECS'
       run: |
-        aws ecs update-service --cluster squint-squint_ecs_cluster-cluster --service ${{ env.APPLICATION_NAME }}-ecs-service --force-new-deployment
+        aws ecs update-service --cluster squint-ecs_cluster-cluster --service ${{ env.APPLICATION_NAME }}-ecs-service --force-new-deployment
       shell: bash
