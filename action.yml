@@ -1,5 +1,5 @@
 name: 'BuildApp'
-description: 'Get all the paraters by Name of the repository'
+description: 'Get all the parameters by Name of the repository'
 runs:
   using: "composite"
   steps:
@@ -7,11 +7,11 @@ runs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID_DEV }}
-        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY_DEV }}
+        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
         
-    - name: Checkout the repository to the runner
+    - name: Get Parameters from SSM
       uses: teamknowlogy-org/action-get-credentials@main
       with:
         PROJECT_NAME: ${{ env.PROJECT_NAME }}
@@ -23,33 +23,33 @@ runs:
         node-version: ${{ env.NODE_VERSION }}
 
 ###### LAMBDA DEPLOY  ######
-    - name: Set CLuster Env
+    - name: Set Bucket to push Lambda Code
       if: env.DEPLOY_TYPE == 'LAMBDA'
       run: |
-          echo S3_BUCKET_NAME_LAMBDA="squint-dev-lambda-deploy" >> "$GITHUB_ENV"   
+          echo S3_BUCKET_NAME_LAMBDA="squint-${{ env.BRANCH_CUSTOM_NAME }}-lambda-deploy" >> "$GITHUB_ENV"   
       shell: bash
       
-    - name: Instalar dependencias
+    - name: Install NPM Dependencies
       if: env.DEPLOY_TYPE == 'LAMBDA'
       run: npm install ${{ env.PROD_FLAG }}
       shell: bash
       
-    - name: build 
+    - name: Run NPM Build  
       if: env.DEPLOY_TYPE == 'LAMBDA'   
       run: npm run build:ssm 
       shell: bash
 
-    - name: Empaquetar función
+    - name: Zip Lambda Function
       if: env.DEPLOY_TYPE == 'LAMBDA'   
       run: zip -r lambda_function.zip ./* -x "*.zip"
       shell: bash
       
-    - name: Empaquetar función
+    - name: Push Lambda Code to S3 Bucket
       if: env.DEPLOY_TYPE == 'LAMBDA'   
       run: aws s3 cp "lambda_function.zip" "s3://${{ env.S3_BUCKET_NAME_LAMBDA }}/${{ env.APPLICATION_NAME }}/lambda_function.zip"
       shell: bash
 
-    - name: Desplegar función en AWS Lambda
+    - name: Deploy Lambda code using Zip file pushed to S3
       if: env.DEPLOY_TYPE == 'LAMBDA'   
       run: |
         aws lambda update-function-code \
@@ -59,19 +59,19 @@ runs:
           --region ${{ env.AWS_REGION }}
       shell: bash
 
-    - name: Empaquetar función
+    - name: Delete zip file from S3
       if: env.DEPLOY_TYPE == 'LAMBDA'   
       run: aws s3 rm "s3://${{ env.S3_BUCKET_NAME_LAMBDA }}/${{ env.APPLICATION_NAME }}lambda_function.zip"
       shell: bash
 
 ###### CLOUDFRONT DEPLOY  ######
-    - name: Set CLuster Env
+    - name: Set environment variable for S3 Bucket to deploy the code
       if: env.DEPLOY_TYPE == 'CLOUDFRONT'
       run: |
-          echo BUCKET_NAME="${{ env.APPLICATION_NAME }}-dev" >> "$GITHUB_ENV"   
+          echo BUCKET_NAME="${{ env.APPLICATION_NAME }}-${{ env.BRANCH_CUSTOM_NAME }}" >> "$GITHUB_ENV"   
       shell: bash
       
-    - name: Set CLuster Env
+    - name: Get Cloudfront distributuion ID
       if: env.DEPLOY_TYPE == 'CLOUDFRONT'
       run: |
           echo CLOUDFRONT_DISTRIBUTION="$(aws cloudfront list-distributions --query 'DistributionList.Items[?Origins.Items[?Id==`'${{ env.BUCKET_NAME }}'`]].{Id:Id}' --output text)" >> "$GITHUB_ENV"   
@@ -83,19 +83,19 @@ runs:
           echo "My Cloudfront distribution is: ${{ env.CLOUDFRONT_DISTRIBUTION }}"
       shell: bash
                 
-    - name: Build and package application
+    - name: Run NPM Install
       if: env.DEPLOY_TYPE == 'CLOUDFRONT'
       run: |
         npm install
       shell: bash
       
-    - name: Build and package application
+    - name: Run NPM Build
       if: env.DEPLOY_TYPE == 'CLOUDFRONT'
       run: |
         npm run build:develop
       shell: bash
 
-    - name: Deploy to S3
+    - name: Push code to S3
       if: env.DEPLOY_TYPE == 'CLOUDFRONT'
       run: |
         cd output/dist
@@ -111,50 +111,38 @@ runs:
 
 ####### ECS steps  ######
 
-    - name: Set CLuster Env
-      if: env.DEPLOY_TYPE == 'ECS'
-      run: |
-        if [[ -z "$CLUSTER_NAME" ]]; then
-          echo "Name Cluster Name  is empty"
-          echo CLUSTER_NAME=$(echo $SERVICE_NAME) >> "$GITHUB_ENV"   
-        else
-          echo "Name variable is not empty"
-          echo "USING $CLUSTER_NAME"
-        fi
-      shell: bash
-        
-    - name: Instalar dependencias
+    - name: Run NPM Install
       if: env.DEPLOY_TYPE == 'ECS'
       run: |
         npm install
       shell: bash
 
-    - name: Hacer build de la aplicación
+    - name: Run NPM Build
       if: env.DEPLOY_TYPE == 'ECS'
       run: |
         npm run build
       shell: bash
           
-    - name: Login en el registro de contenedores de AWS
+    - name: AWS ECR Login
       if: env.DEPLOY_TYPE == 'ECS'
       run: |
         aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REPOSITORY }}
       shell: bash
       
-    - name: Construir y etiquetar imagen Docker
+    - name: Build and Tag Docker Image
       if:  env.DEPLOY_TYPE == 'ECS'
       run: |
         docker build -t ${{ env.APPLICATION_NAME }} .
         docker tag ${{ env.APPLICATION_NAME }}:latest ${{ env.ECR_REPOSITORY }}/${{ env.APPLICATION_NAME }}:latest
       shell: bash
       
-    - name: Publicar imagen Docker en AWS ECR
+    - name: Run Docker Push to ECR
       if:  env.DEPLOY_TYPE == 'ECS'
       run: |
         docker push ${{ env.ECR_REPOSITORY }}/${{ env.APPLICATION_NAME }}:latest
       shell: bash
    
-    - name: Actualizar servicio en AWS ECS
+    - name: Update AWS ECS service
       if:  env.DEPLOY_TYPE == 'ECS'
       run: |
         aws ecs update-service --cluster squint-ecs-cluster --service ${{ env.APPLICATION_NAME }}-ecs-service --force-new-deployment
