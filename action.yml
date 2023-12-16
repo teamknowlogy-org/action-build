@@ -61,7 +61,7 @@ runs:
 
     - name: Delete zip file from S3
       if: env.DEPLOY_TYPE == 'LAMBDA'   
-      run: aws s3 rm "s3://${{ env.S3_BUCKET_NAME_LAMBDA }}/${{ env.APPLICATION_NAME }}lambda_function.zip"
+      run: aws s3 rm "s3://${{ env.S3_BUCKET_NAME_LAMBDA }}/${{ env.APPLICATION_NAME }}/lambda_function.zip"
       shell: bash
 
 ###### CLOUDFRONT DEPLOY  ######
