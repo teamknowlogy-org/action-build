@@ -146,7 +146,12 @@ runs:
       shell: bash
 
 ####### ECS steps  ######
-
+    - name: Set Bucket to push Lambda Code
+      if: env.DEPLOY_TYPE == 'ECS'
+      run: |
+          echo ECR_REPOSITORY="${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com" >> "$GITHUB_ENV"   
+      shell: bash
+      
     - name: Run NPM Install
       if: env.DEPLOY_TYPE == 'ECS'
       run: |
