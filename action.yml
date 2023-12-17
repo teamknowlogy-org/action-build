@@ -10,18 +10,6 @@ runs:
        echo "El REPOSITORIO ES:$GITHUB_REPOSITORY Y la RAMA ES ${{ github.ref_name }}"
       shell: bash
 
-    - name: Set up environment variables
-       run: |
-         case "$GITHUB_REPOSITORY" in
-           main)
-                echo APPLICATION_NAME=$(echo $GITHUB_REPOSITORY | cut -d "/" -f2) >> "$GITHUB_ENV"
-           *)
-             echo "No matching branch. Exiting..."
-             exit 1
-             ;;
-         esac
-      shell: bash
-
     - name: Set env to staging
       run: |
        echo APPLICATION_NAME=$(echo $GITHUB_REPOSITORY | cut -d "/" -f2) >> "$GITHUB_ENV"
