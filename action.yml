@@ -16,16 +16,19 @@ runs:
           main)
               echo AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID_MAIN }} >> "$GITHUB_ENV"
               echo AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY_MAIN }} >> "$GITHUB_ENV"
+              echo AWS_ACCOUNT_ID=${{ env.AWS_ACCOUNT_ID_MAIN }} >> "$GITHUB_ENV"
               echo BRANCH_CUSTOM_NAME="prod" >> "$GITHUB_ENV"
             ;;
           develop)
               echo AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID_DEV }} >> "$GITHUB_ENV"
               echo AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY_DEV }} >> "$GITHUB_ENV"
+              echo AWS_ACCOUNT_ID=${{ env.AWS_ACCOUNT_ID_DEV }} >> "$GITHUB_ENV"
               echo BRANCH_CUSTOM_NAME="dev" >> "$GITHUB_ENV"
             ;;
           qa)
               echo AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID_QA }} >> "$GITHUB_ENV"
               echo AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY_QA }} >> "$GITHUB_ENV"
+              echo AWS_ACCOUNT_ID=${{ env.AWS_ACCOUNT_ID_DEV }} >> "$GITHUB_ENV"
               echo BRANCH_CUSTOM_NAME="qa" >> "$GITHUB_ENV"
             ;;
           *)
@@ -149,7 +152,7 @@ runs:
     - name: Set Bucket to push Lambda Code
       if: env.DEPLOY_TYPE == 'ECS'
       run: |
-          echo ECR_REPOSITORY="${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com" >> "$GITHUB_ENV"   
+          echo ECR_REPOSITORY="${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com" >> "$GITHUB_ENV"   
       shell: bash
       
     - name: Run NPM Install
