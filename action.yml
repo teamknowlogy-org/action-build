@@ -15,7 +15,7 @@ runs:
         case "${{ github.ref_name }}" in
           main)
               echo AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID_MAIN }} >> "$GITHUB_ENV"
-              echo AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_MAIN }} >> "$GITHUB_ENV"
+              echo AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY_MAIN }} >> "$GITHUB_ENV"
               echo BRANCH_CUSTOM_NAME="prod" >> "$GITHUB_ENV"
             ;;
           develop)
