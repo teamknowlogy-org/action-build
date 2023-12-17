@@ -5,30 +5,30 @@ runs:
   steps:
 
 
-   - name: Set up environment
-      run: |
-        case "${{ github.ref_name }}" in
-          main)
-              echo AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} >> "$GITHUB_ENV"
-              echo AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} >> "$GITHUB_ENV"
-              echo BRANCH_CUSTOM_NAME="main" >> "$GITHUB_ENV"
-
-            ;;
-          develop)
-              echo AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_DEV }} >> "$GITHUB_ENV"
-              echo AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }} >> "$GITHUB_ENV"
-              echo BRANCH_CUSTOM_NAME="dev" >> "$GITHUB_ENV"
-            ;;
-          qa)
-              echo AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_QA }} >> "$GITHUB_ENV"
-              echo AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_QA }} >> "$GITHUB_ENV"
-              echo BRANCH_CUSTOM_NAME="qa" >> "$GITHUB_ENV"
-            ;;
-          *)
-            echo "No matching branch. Exiting..."
-            exit 1
-            ;;
-        esac
+    - name: Set up environment
+       run: |
+         case "${{ github.ref_name }}" in
+           main)
+               echo AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} >> "$GITHUB_ENV"
+               echo AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} >> "$GITHUB_ENV"
+               echo BRANCH_CUSTOM_NAME="main" >> "$GITHUB_ENV"
+  
+             ;;
+           develop)
+               echo AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_DEV }} >> "$GITHUB_ENV"
+               echo AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }} >> "$GITHUB_ENV"
+               echo BRANCH_CUSTOM_NAME="dev" >> "$GITHUB_ENV"
+             ;;
+           qa)
+               echo AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_QA }} >> "$GITHUB_ENV"
+               echo AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_QA }} >> "$GITHUB_ENV"
+               echo BRANCH_CUSTOM_NAME="qa" >> "$GITHUB_ENV"
+             ;;
+           *)
+             echo "No matching branch. Exiting..."
+             exit 1
+             ;;
+         esac
 
     - name: Set env to staging
       run: |
