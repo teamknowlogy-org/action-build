@@ -35,7 +35,7 @@ runs:
         esac
       shell: bash
         
-    - name: Set env to staging
+    - name: Set Application Name equals Repository Name
       run: |
        echo APPLICATION_NAME=$(echo $GITHUB_REPOSITORY | cut -d "/" -f2) >> "$GITHUB_ENV"
       shell: bash
