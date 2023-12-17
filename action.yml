@@ -16,19 +16,16 @@ runs:
           main)
               echo AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID_MAIN }} >> "$GITHUB_ENV"
               echo AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY_MAIN }} >> "$GITHUB_ENV"
-              echo AWS_ACCOUNT_ID=${{ env.AWS_ACCOUNT_ID_MAIN }} >> "$GITHUB_ENV"
               echo BRANCH_CUSTOM_NAME="prod" >> "$GITHUB_ENV"
             ;;
           develop)
               echo AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID_DEV }} >> "$GITHUB_ENV"
               echo AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY_DEV }} >> "$GITHUB_ENV"
-              echo AWS_ACCOUNT_ID=${{ env.AWS_ACCOUNT_ID_DEV }} >> "$GITHUB_ENV"
               echo BRANCH_CUSTOM_NAME="dev" >> "$GITHUB_ENV"
             ;;
           qa)
               echo AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID_QA }} >> "$GITHUB_ENV"
               echo AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY_QA }} >> "$GITHUB_ENV"
-              echo AWS_ACCOUNT_ID=${{ env.AWS_ACCOUNT_ID_QA }} >> "$GITHUB_ENV"
               echo BRANCH_CUSTOM_NAME="qa" >> "$GITHUB_ENV"
             ;;
           *)
@@ -49,7 +46,12 @@ runs:
         aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
-        
+
+    - name: Set AWS Account ID
+      run: |
+       echo AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text) >> "$GITHUB_ENV"
+      shell: bash
+      
     - name: Get Parameters from SSM
       uses: teamknowlogy-org/action-get-credentials@main
       with:
